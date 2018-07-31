@@ -91,8 +91,58 @@ void PlayerAi::handleActionKey(Actor *owner, int ascii) {
 			}
 			break;
 		}
+		case 'i': {
+			// display inventory
+			Actor *actor = choseFromInventory(owner);
+			if (actor) {
+				actor->pickable->use(actor, owner);
+				engine.gameStatus = Engine::NEW_TURN;
+			}
+			break;
+		}
 		default: break; // ?
 	}
+}
+
+Actor *PlayerAi::choseFromInventory(Actor *owner) {
+	static const int INVENTORY_WIDTH = 50;
+	static const int INVENTORY_HEIGHT = 28;
+	static TCODConsole con(INVENTORY_WIDTH, INVENTORY_HEIGHT);
+
+	// display the inventory frame
+	con.setDefaultForeground(TCODColor(200, 180, 50));
+	con.printFrame(0, 0, INVENTORY_WIDTH, INVENTORY_HEIGHT, true,
+		TCOD_BKGND_DEFAULT, "inventory");
+
+	// display the items with their keyboard shortcut
+	con.setDefaultForeground(TCODColor::white);
+	int shortcut = 'a';
+	int y = 1;
+	for (Actor **iterator = owner->container->inventory.begin();
+		iterator != owner->container->inventory.end(); iterator++) {
+		Actor *actor = *iterator;
+		con.print(2, y, "(%c) %s", shortcut, actor->name);
+		y++;
+		shortcut++;
+	}
+
+	// blit the inventory console on the root console
+	TCODConsole::blit(&con, 0, 0, INVENTORY_WIDTH, INVENTORY_HEIGHT,
+		TCODConsole::root, engine.screenWidth / 2 - INVENTORY_WIDTH / 2,
+		engine.screenHeight / 2 - INVENTORY_HEIGHT / 2);
+	TCODConsole::flush();
+
+	// wait for a key press
+	TCOD_key_t key;
+	TCODSystem::waitForEvent(TCOD_EVENT_KEY_PRESS, &key, NULL, true);
+
+	if (key.vk == TCODK_CHAR) {
+		int actorIndex = key.c - 'a';
+		if (actorIndex >= 0 && actorIndex < owner->container->inventory.size()) {
+			return owner->container->inventory.get(actorIndex);
+		}
+	}
+	return NULL;
 }
 
 void MonsterAi::update(Actor *owner) {
