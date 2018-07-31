@@ -1,5 +1,6 @@
 class Ai{
 public:
+	//virtual ~Ai() {}; ?
 	virtual void update(Actor *owner) = 0; // pure virtual method / abstract method
 };
 
@@ -9,6 +10,7 @@ public:
 
 protected:
 	bool moveOrAttack(Actor *owner, int targetx, int targety);
+	void handleActionKey(Actor *owner, int ascii);
 };
 
 class MonsterAi : public Ai {
