@@ -12,7 +12,7 @@ Engine::Engine(int screenWidth, int screenHeight) : gameStatus(STARTUP), fovRadi
 	gui = new Gui();
 
 	gui->message(TCODColor::darkerCrimson,
-		"Welcome stranger!\n Prepare to perish in the Proxy outskirts.");
+		"Welcome stranger!\nPrepare to perish in the Proxy outskirts.");
 }
 
 Engine::~Engine() {

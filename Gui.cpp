@@ -78,7 +78,7 @@ void Gui::renderBar(int x, int y, int width, const char *name,
 	float value, float maxValue, const TCODColor &barColor,
 	const TCODColor &backColor) {
 	// fill the background
-	con->setDefaultBackground(barColor);
+	con->setDefaultBackground(backColor);
 	con->rect(x, y, width, 1, false, TCOD_BKGND_SET);
 
 	int barWidth = (int)(value / maxValue * width);
