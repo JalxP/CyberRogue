@@ -72,7 +72,7 @@ void PlayerAi::handleActionKey(Actor *owner, int ascii) {
 					actor->y == owner->y) {
 					if (actor->pickable->pick(actor, owner)) {
 						found = true;
-						engine.gui->message(TCODColor::darkGreen,
+						engine.gui->message(TCODColor::darkerGreen,
 							"You pick up the %s.", actor->name);
 						break;
 					}
