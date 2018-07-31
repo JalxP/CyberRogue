@@ -9,6 +9,7 @@ float Destructible::takeDamage(Actor *owner, float damage) {
 	if (damage > 0) {
 		hp -= damage;
 		if (hp <= 0) {
+			hp = 0; // to make sure hp is not negative
 			die(owner);
 		}
 	}
@@ -34,7 +35,7 @@ MonsterDestructible::MonsterDestructible(float maxHp, float defense, const char 
 
 void MonsterDestructible::die(Actor *owner) {
 	// transform it into a corpse, doesn't block, can't be atacked and doesn't move
-	printf("%s is dead\n", owner->name);
+	engine.gui->message(TCODColor::white, "%s is dead\n", owner->name);
 	Destructible::die(owner);
 }
 
@@ -43,7 +44,7 @@ PlayerDestructible::PlayerDestructible(float maxHp, float defense, const char *c
 }
 
 void PlayerDestructible::die(Actor *owner) {
-	printf("You died!\n");
+	engine.gui->message(TCODColor::red, "You died!\n");
 	Destructible::die(owner);
 	engine.gameStatus = Engine::DEFEAT;
 }
