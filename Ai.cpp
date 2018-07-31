@@ -84,7 +84,7 @@ void PlayerAi::handleActionKey(Actor *owner, int ascii) {
 				}
 			}
 			if (!found) {
-				engine.gui->message(TCODColor::lightestGrey,
+				engine.gui->message(TCODColor::lightAmber,
 					"There's nothing here that you can pick up.");
 				// Failing to pick an item is still a new turn
 				engine.gameStatus = Engine::NEW_TURN;

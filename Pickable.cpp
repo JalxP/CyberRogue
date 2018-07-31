@@ -26,6 +26,9 @@ bool Healer::use(Actor *owner, Actor *wearer) {
 		if (amountHealed > 0) {
 			return Pickable::use(owner, wearer);
 		}
+		else {
+			engine.gui->message(TCODColor::lightAmber, "You are already at full health!");
+		}
 	}
 	return false;
 }
