@@ -13,7 +13,6 @@ public:
 	Gui *gui;
 	TCOD_key_t lastKey;
 	TCOD_mouse_t mouse;
-
 	TCODList<Actor *> actors;
 	Actor *player;
 	Map * map;
@@ -21,6 +20,8 @@ public:
 
 	Engine(int screenWidth, int screenHeight);
 	~Engine();
+	Actor *getClosestMonster(int x, int y, float range) const;
+	bool pickATile(int*x, int *y, float maxRange = 0.0f);
 	void update();
 	void sendToBack(Actor *actor);
 	void render();

@@ -1,4 +1,4 @@
-#include "stdafx.h"
+﻿#include "stdafx.h"
 
 static const int ROOM_MAX_SIZE = 12;
 static const int ROOM_MIN_SIZE = 6;
@@ -114,11 +114,33 @@ void Map::addMonster(int x, int y) {
 }
 
 void Map::addItem(int x, int y) {
-	Actor *healthPotion = new Actor(x, y, '!', "stimpak",
-		TCODColor::lightRed);
-	healthPotion->blocks = false;
-	healthPotion->pickable = new Healer(4);
-	engine.actors.push(healthPotion);
+
+	TCODRandom *rng = TCODRandom::getInstance();
+	int randomNumber = rng->getInt(0, 100);
+	if (randomNumber < 70) { 
+		//create a stimpak with 70% probability
+		Actor *healthPotion = new Actor(x, y, '!', "stimpak",
+			TCODColor::lightRed);
+		healthPotion->blocks = false;
+		healthPotion->pickable = new Healer(4);
+		engine.actors.push(healthPotion);
+	}
+	else if (randomNumber < 80) { 
+		// create a zapper with 10% probability
+		Actor *taser = new Actor(x, y, '#', "taser",
+			TCODColor::azure);
+		taser->blocks = false;
+		taser->pickable = new Taser(5, 20);
+		engine.actors.push(taser);
+	}
+	else if (randomNumber < 90) { 
+		// create a molotov with 10% probability
+		Actor *molotovCocktail = new Actor(x, y, '#', "molotov cocktail",
+			TCODColor::darkerFlame);
+		molotovCocktail->blocks = false;
+		molotovCocktail->pickable = new Molotov(3, 12);
+		engine.actors.push(molotovCocktail);
+	}
 }
 
 void Map::dig(int x1, int y1, int x2, int y2) {

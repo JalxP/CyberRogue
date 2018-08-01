@@ -14,3 +14,18 @@ public:
 	Healer(float amount);
 	bool use(Actor *owner, Actor *wearer);
 };
+
+class Taser : public Pickable {
+public:
+	float range, damage;
+	Taser(float range, float damage);
+	bool use(Actor *owner, Actor *wearer);
+};
+
+// since molotoves require a range and a damage amount
+// we can inherit from the Taser class
+class Molotov : public Taser {
+public:
+	Molotov(float range, float damage);
+	bool use(Actor *owner, Actor *wearer);
+};

@@ -22,6 +22,63 @@ Engine::~Engine() {
 	delete gui;
 }
 
+Actor *Engine::getClosestMonster(int x, int y, float range) const {
+	Actor *closest = NULL;
+	float bestDistance = 1E6f;
+
+	for (Actor **iterator = actors.begin(); iterator != actors.end();
+		iterator++) {
+		Actor *actor = *iterator;
+		if (actor != player && actor->destructible &&
+			!actor->destructible->isDead()) {
+			float distance = actor->getDistance(x, y);
+			if (distance < bestDistance &&
+				(distance <= range || range == 0.0f)) {
+				bestDistance = distance;
+				closest = actor;
+			}
+		}
+	}
+	return closest;
+}
+
+bool Engine::pickATile(int *x, int *y, float maxRange) {
+	while (!TCODConsole::isWindowClosed()) {
+		render();
+
+		// Highlight tiles in range
+		for (int cx = 0; cx < map->width; cx++) {
+			for (int cy = 0; cy < map->height; cy++) {
+				if (map->isInFOV(cx, cy) &&
+					(maxRange == 0 || player->getDistance(cx, cy) <= maxRange)) {
+					TCODColor col = TCODConsole::root->getCharBackground(cx, cy);
+					col = col * 1.5f;
+					TCODConsole::root->setCharBackground(cx, cy, col);
+				}
+			}
+		}
+		TCODSystem::checkForEvent(TCOD_EVENT_KEY_PRESS | TCOD_EVENT_MOUSE, &lastKey, &mouse);
+		// make tile under mouse a different color
+		// and get coordinates where player clicks
+		if (map->isInFOV(mouse.cx, mouse.cy) &&
+			(maxRange == 0 || player->getDistance(mouse.cx, mouse.cy) <= maxRange)) {
+			TCODConsole::root->setCharBackground(mouse.cx, mouse.cy,
+				TCODColor::white);
+			if (mouse.lbutton_pressed) {
+				*x = mouse.cx;
+				*y = mouse.cy;
+				return true;
+			}
+		}
+		// if the player the right click we cancel selection
+		if (mouse.rbutton_pressed) {
+			return false;
+		}
+		TCODConsole::flush();
+	}
+	return false;
+}
+
 void Engine::update() {
 	if (gameStatus == STARTUP) map->computeFov();
 	gameStatus = IDLE;

@@ -16,6 +16,12 @@ Actor::~Actor() {
 	if (container) delete container;
 }
 
+float Actor::getDistance(int cx, int cy) const {
+	int dx = x - cx;
+	int dy = y - cy;
+	return sqrtf(dx*dx + dy*dy);
+}
+
 void Actor::update() {
 	if (ai) ai->update(this);
 }
