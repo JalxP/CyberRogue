@@ -141,6 +141,14 @@ void Map::addItem(int x, int y) {
 		molotovCocktail->pickable = new Molotov(3, 12);
 		engine.actors.push(molotovCocktail);
 	}
+	else {
+		// create an emp pulse device with 10% probability
+		Actor *empDevice = new Actor(x, y, '#', "emp device",
+			TCODColor::darkPink);
+		empDevice->blocks = false;
+		empDevice->pickable = new EmpPulse(10, 8);
+		engine.actors.push(empDevice);
+	}
 }
 
 void Map::dig(int x1, int y1, int x2, int y2) {

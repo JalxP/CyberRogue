@@ -3,6 +3,7 @@ public:
 	// since the only actor that will pick up items will be the player
 	// there is no need to make the pick function virtual
 	bool pick(Actor *owner, Actor *wearer);
+	void drop(Actor *owner, Actor *wearer);
 	virtual bool use(Actor *owner, Actor *wearer); // is dependent on the item
 };
 
@@ -27,5 +28,13 @@ public:
 class Molotov : public Taser {
 public:
 	Molotov(float range, float damage);
+	bool use(Actor *owner, Actor *wearer);
+};
+
+class EmpPulse : public Pickable {
+public:
+	int numberOfTurns;
+	float range;
+	EmpPulse(int numberOfTurns, float range);
 	bool use(Actor *owner, Actor *wearer);
 };

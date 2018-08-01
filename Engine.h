@@ -21,6 +21,7 @@ public:
 	Engine(int screenWidth, int screenHeight);
 	~Engine();
 	Actor *getClosestMonster(int x, int y, float range) const;
+	Actor *getActor(int x, int y) const;
 	bool pickATile(int*x, int *y, float maxRange = 0.0f);
 	void update();
 	void sendToBack(Actor *actor);
