@@ -28,5 +28,5 @@ void Attacker::save(TCODZip &zip) {
 }
 
 void Attacker::load(TCODZip &zip) {
-	zip.getFloat();
+	power = zip.getFloat();
 }
