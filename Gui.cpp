@@ -124,6 +124,25 @@ void Gui::message(const TCODColor &col, const char *text, ...) {
 	} while (lineEnd); // Ends if no '\n' is found
 }
 
+void Gui::save(TCODZip &zip) {
+	zip.putInt(log.size());
+	for (Message **iterator = log.begin();
+		iterator != log.end(); iterator++) {
+		zip.putString((*iterator)->text);
+		zip.putColor(&(*iterator)->col);
+	}
+}
+
+void Gui::load(TCODZip &zip) {
+	int numberOfMessages = zip.getInt();
+	while (numberOfMessages > 0) {
+		const char *text = zip.getString();
+		TCODColor col = zip.getColor();
+		message(col, text);
+		numberOfMessages--;
+	}
+}
+
 Gui::Message::Message(const char *text, const TCODColor &col) :
 	text(_strdup(text)), col(col) {
 }

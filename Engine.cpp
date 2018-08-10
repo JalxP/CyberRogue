@@ -1,19 +1,10 @@
 #include "stdafx.h"
 
-Engine::Engine(int screenWidth, int screenHeight) : gameStatus(STARTUP), fovRadius(10),
+Engine::Engine(int screenWidth, int screenHeight) : gameStatus(STARTUP),
+	player(NULL), map(NULL), fovRadius(10),
 	screenWidth(screenWidth), screenHeight(screenHeight) {
 	TCODConsole::initRoot(screenWidth, screenHeight, "CyberRogue 0.1", false);
-	player = new Actor(40, 25, '@', "player", TCODColor::white);
-	player->destructible = new PlayerDestructible(30, 2, "your cadaver");
-	player->attacker = new Attacker(5);
-	player->ai = new PlayerAi();
-	player->container = new Container(26); // one slot each letter (ez access)
-	actors.push(player);
-	map = new Map(80, 43);
 	gui = new Gui();
-
-	gui->message(TCODColor::darkerCrimson,
-		"Welcome stranger!\nPrepare to perish in the Proxy outskirts.");
 }
 
 Engine::~Engine() {
@@ -89,6 +80,19 @@ bool Engine::pickATile(int *x, int *y, float maxRange) {
 		TCODConsole::flush();
 	}
 	return false;
+}
+
+void Engine::init() {
+	player = new Actor(40, 25, '@', "player", TCODColor::white);
+	player->destructible = new PlayerDestructible(30, 2, "your cadaver");
+	player->attacker = new Attacker(5);
+	player->ai = new PlayerAi();
+	player->container = new Container(26); // one slot each letter (ez access)
+	actors.push(player);
+	map = new Map(80, 43);
+	map->init(true);
+	gui->message(TCODColor::darkerCrimson,
+		"Welcome stranger!\nPrepare to perish in the Proxy outskirts.");
 }
 
 void Engine::update() {

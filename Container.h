@@ -1,4 +1,4 @@
-class Container {
+class Container : public Persistent{
 public:
 	int size; // maximum number of actors. 0 = unlimited
 	TCODList<Actor *> inventory;
@@ -8,4 +8,6 @@ public:
 	
 	bool add(Actor *actor);
 	void remove(Actor *actor);
+	void save(TCODZip &zip);
+	void load(TCODZip &zip);
 };

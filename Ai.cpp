@@ -27,6 +27,13 @@ void PlayerAi::update(Actor *owner) {
 	}
 }
 
+void PlayerAi::save(TCODZip &zip) {
+	zip.putInt(PLAYER);
+}
+
+void PlayerAi::load(TCODZip &zip) {
+}
+
 bool PlayerAi::moveOrAttack(Actor *owner, int targetx, int targety) {
 	if (engine.map->isWall(targetx, targety)) return false;
 	// look for living actors to atack
@@ -170,6 +177,15 @@ void MonsterAi::update(Actor *owner) {
 	}
 }
 
+void MonsterAi::save(TCODZip &zip) {
+	zip.putInt(MONSTER);
+	zip.putInt(moveCount);
+}
+
+void MonsterAi::load(TCODZip &zip) {
+	moveCount = zip.getInt();
+}
+
 void MonsterAi::moveOrAttack(Actor *owner, int targetx, int targety) {
 	int dx = targetx - owner->x;
 	int dy = targety - owner->y;
@@ -224,4 +240,34 @@ void ConfusedMonsterAi::update(Actor *owner) {
 		owner->ai = oldAi;
 		delete this;
 	}
+}
+
+void ConfusedMonsterAi::save(TCODZip &zip) {
+	zip.putInt(CONFUSED_MONSTER);
+	zip.putInt(numberOfTurns);
+	oldAi->save(zip);
+}
+
+void ConfusedMonsterAi::load(TCODZip &zip) {
+	numberOfTurns = zip.getInt();
+	oldAi = Ai::create(zip);
+}
+
+Ai *Ai::create(TCODZip &zip) {
+	AiType type = (AiType)zip.getInt();
+	Ai *ai = NULL;
+	switch (type) {
+		case Ai::MONSTER:
+			ai = new MonsterAi();
+			break;
+		case Ai::CONFUSED_MONSTER:
+			ai = new ConfusedMonsterAi(0, NULL);
+			break;
+		case Ai::PLAYER:
+			ai = new PlayerAi();
+			break;
+		default: break;
+	}
+	ai->load(zip);
+	return ai;
 }

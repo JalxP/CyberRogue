@@ -19,3 +19,23 @@ bool Container::add(Actor *actor) {
 void Container::remove(Actor *actor) {
 	inventory.remove(actor);
 }
+
+void Container::save(TCODZip &zip) {
+	zip.putInt(size);
+	zip.putInt(inventory.size());
+	for (Actor **iterator = inventory.begin();
+		iterator != inventory.end(); iterator++) {
+		(*iterator)->save(zip);
+	}
+}
+
+void Container::load(TCODZip &zip) {
+	size = zip.getInt();
+	int numberOfActors = zip.getInt();
+	while (numberOfActors > 0) {
+		Actor *actor = new Actor(0, 0, 0, NULL, TCODColor::white);
+		actor->load(zip);
+		inventory.push(actor);
+		numberOfActors--;
+	}
+}
