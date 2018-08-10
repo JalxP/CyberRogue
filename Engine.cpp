@@ -8,8 +8,7 @@ Engine::Engine(int screenWidth, int screenHeight) : gameStatus(STARTUP),
 }
 
 Engine::~Engine() {
-	actors.clearAndDelete();
-	delete map;
+	term();
 	delete gui;
 }
 
@@ -93,6 +92,13 @@ void Engine::init() {
 	map->init(true);
 	gui->message(TCODColor::darkerCrimson,
 		"Welcome stranger!\nPrepare to perish in the Proxy outskirts.");
+	gameStatus = STARTUP;
+}
+
+void Engine::term() {
+	actors.clearAndDelete();
+	if (map) delete map;
+	gui->clear();
 }
 
 void Engine::update() {

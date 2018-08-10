@@ -11,7 +11,7 @@ Gui::Gui() {
 
 Gui::~Gui() {
 	delete con;
-	log.clearAndDelete();
+	clear();
 }
 
 void Gui::render() {
@@ -133,6 +133,10 @@ void Gui::save(TCODZip &zip) {
 	}
 }
 
+void Gui::clear() {
+	log.clearAndDelete();
+}
+
 void Gui::load(TCODZip &zip) {
 	int numberOfMessages = zip.getInt();
 	while (numberOfMessages > 0) {
@@ -149,4 +153,23 @@ Gui::Message::Message(const char *text, const TCODColor &col) :
 
 Gui::Message::~Message() {
 	free(text);
+}
+
+Menu::~Menu() {
+	clear();
+}
+
+void Menu::clear() {
+	items.clearAndDelete();
+}
+
+void Menu::addItem(MenuItemCode code, const char *label) {
+	MenuItem *item = new MenuItem();
+	item->code = code;
+	item->label = label;
+	items.push(item);
+}
+
+Menu::MenuItemCode Menu::pick() {
+	static TCODImage img("menu_background.png");
 }
