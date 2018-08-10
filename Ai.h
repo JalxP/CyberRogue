@@ -11,6 +11,9 @@ protected:
 
 class PlayerAi : public Ai {
 public:
+	int xpLevel;
+	PlayerAi();
+	int getNextLevelXp();
 	void update(Actor *owner);
 	void save(TCODZip &zip);
 	void load(TCODZip &zip);

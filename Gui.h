@@ -1,3 +1,26 @@
+class Menu {
+public:
+	enum MenuItemCode {
+		NONE, NEW_GAME, CONTINUE, EXIT,
+		CONSTITUTION, STRENGTH, AGILITY
+	};
+	enum DisplayMode {
+		MAIN,
+		PAUSE
+	};
+
+	~Menu();
+	void clear();
+	void addItem(MenuItemCode code, const char *label);
+	MenuItemCode pick(DisplayMode mode=MAIN);
+protected:
+	struct MenuItem {
+		MenuItemCode code;
+		const char *label;
+	};
+	TCODList<MenuItem *> items;
+};
+
 class Gui : public Persistent {
 public:
 	Menu menu;
@@ -25,22 +48,4 @@ protected:
 		float value, float maxValue, const TCODColor &barColor,
 		const TCODColor &backColor);
 
-};
-
-class Menu {
-public:
-	enum MenuItemCode {
-		NONE, NEW_GAME, CONTINUE, EXIT
-	};
-
-	~Menu();
-	void clear();
-	void addItem(MenuItemCode code, const char *label);
-	MenuItemCode pick();
-protected:
-	struct MenuItem {
-		MenuItemCode code;
-		const char *label;
-	};
-	TCODList<MenuItem *> items;
 };

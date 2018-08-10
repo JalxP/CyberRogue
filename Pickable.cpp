@@ -47,15 +47,6 @@ bool Healer::use(Actor *owner, Actor *wearer) {
 	return false;
 }
 
-void Healer::save(TCODZip &zip) {
-	zip.putInt(HEALER);
-	zip.putFloat(amount);
-}
-
-void Healer::load(TCODZip &zip) {
-	amount = zip.getFloat();
-}
-
 Taser::Taser(float range, float damage) :
 	range(range), damage(damage) {
 }
@@ -74,17 +65,6 @@ bool Taser::use(Actor *owner, Actor *wearer) {
 	closestMonster->destructible->takeDamage(closestMonster, damage);
 	// check that the item is consumed on use
 	return Pickable::use(owner, wearer);
-}
-
-void Taser::save(TCODZip &zip) {
-	zip.putInt(TASER);
-	zip.putFloat(range);
-	zip.putFloat(damage);
-}
-
-void Taser::load(TCODZip &zip) {
-	range = zip.getFloat();
-	damage = zip.getFloat();
 }
 
 Molotov::Molotov(float range, float damage) : Taser(range, damage) {
@@ -117,12 +97,6 @@ bool Molotov::use(Actor *owner, Actor *wearer) {
 	return Pickable::use(owner, wearer);
 }
 
-void Molotov::save(TCODZip &zip) {
-	zip.putInt(MOLOTOV);
-	zip.putFloat(range);
-	zip.putFloat(damage);
-}
-
 EmpPulse::EmpPulse(int numberOfTurns, float range) :
 	numberOfTurns(numberOfTurns), range(range) {
 }
@@ -150,37 +124,4 @@ bool EmpPulse::use(Actor *owner, Actor *wearer) {
 		actor->name);
 	// check that emp pulse is consumed on use
 	return Pickable::use(owner, wearer);
-}
-
-void EmpPulse::save(TCODZip &zip) {
-	zip.putInt(EMP_PULSE);
-	zip.putInt(numberOfTurns);
-	zip.putFloat(range);
-}
-
-void EmpPulse::load(TCODZip &zip) {
-	numberOfTurns = zip.getInt();
-	range = zip.getFloat();
-}
-
-Pickable *Pickable::create(TCODZip &zip) {
-	PickableType type = (PickableType)zip.getInt();
-	Pickable *pickable = NULL;
-	switch (type) {
-		case Pickable::HEALER:
-			pickable = new Healer(0);
-			break;
-		case Pickable::TASER:
-			pickable = new Taser(0, 0);
-			break;
-		case Pickable::MOLOTOV:
-			pickable = new Molotov(0, 0);
-			break;
-		case Pickable::EMP_PULSE:
-			pickable = new EmpPulse(0, 0);
-			break;
-		default: break;
-	}
-	pickable->load(zip);
-	return pickable;
 }

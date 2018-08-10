@@ -103,7 +103,7 @@ void Map::addMonster(int x, int y) {
 	if (rng->getInt(0, 100) < 80) {
 		//create a drone with 80% probability
 		Actor *drone = new Actor(x, y, 'd', "drone",TCODColor::darkBlue);
-		drone->destructible = new MonsterDestructible(10, 0, "drone parts");
+		drone->destructible = new MonsterDestructible(10, 0, "drone parts", 50);
 		drone->attacker = new Attacker(3);
 		drone->ai = new MonsterAi();
 		engine.actors.push(drone);
@@ -111,7 +111,7 @@ void Map::addMonster(int x, int y) {
 	else {
 		//create an android with 20% probability
 		Actor *android = new Actor(x, y, 'a', "android", TCODColor::darkPurple);
-		android->destructible = new MonsterDestructible(16, 1, "android parts");
+		android->destructible = new MonsterDestructible(16, 1, "android parts", 125);
 		android->attacker = new Attacker(4);
 		android->ai = new MonsterAi();
 		engine.actors.push(android);
@@ -207,6 +207,9 @@ void Map::createRoom(bool first, int x1, int y1, int x2, int y2, bool withActors
 			numberOfItems--;
 		}
 	}
+	// set stairs position
+	engine.stairs->x = (x1 + x2) / 2;
+	engine.stairs->y = (y1 + y2) / 2;
 }
 
 void Map::render() const {
@@ -226,22 +229,5 @@ void Map::render() const {
 					isWall(x, y) ? darkWall : darkGround);
 			}
 		}
-	}
-}
-
-void Map::save(TCODZip &zip) {
-	zip.putInt(seed);
-	// save as int because TCODZip cant save bools
-	for (int i = 0; i < width*height; i++) {
-		zip.putInt(tiles[i].explored);
-	}
-}
-
-void Map::load(TCODZip &zip) {
-	seed = zip.getInt();
-	init(false); // create map without actors
-
-	for (int i = 0; i < width*height; i++) {
-		tiles[i].explored = zip.getInt();
 	}
 }

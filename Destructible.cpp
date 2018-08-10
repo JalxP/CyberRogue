@@ -1,7 +1,7 @@
 #include "stdafx.h"
 
-Destructible::Destructible(float maxHp, float defense, const char *corpseName) :
-	maxHp(maxHp), hp(maxHp), defense(defense) {
+Destructible::Destructible(float maxHp, float defense, const char *corpseName, int xp) :
+	maxHp(maxHp), hp(maxHp), defense(defense), xp(xp) {
 	this->corpseName = _strdup(corpseName);
 }
 
@@ -43,62 +43,24 @@ void Destructible::die(Actor *owner) {
 	engine.sendToBack(owner);
 }
 
-MonsterDestructible::MonsterDestructible(float maxHp, float defense, const char *corpseName) :
-	Destructible(maxHp, defense, corpseName) {
+MonsterDestructible::MonsterDestructible(float maxHp, float defense, const char *corpseName, int xp) :
+	Destructible(maxHp, defense, corpseName, xp) {
 }
 
 void MonsterDestructible::die(Actor *owner) {
 	// transform it into a corpse, doesn't block, can't be atacked and doesn't move
-	engine.gui->message(TCODColor::white, "%s is dead", owner->name);
+	engine.gui->message(TCODColor::white, "%s is dead. You gain %d xp",
+		owner->name, xp);
+	engine.player->destructible->xp += xp;
 	Destructible::die(owner);
 }
 
-void MonsterDestructible::save(TCODZip &zip) {
-	zip.putInt(MONSTER);
-	Destructible::save(zip);
-}
-
 PlayerDestructible::PlayerDestructible(float maxHp, float defense, const char *corpseName) :
-	Destructible(maxHp, defense, corpseName) {
+	Destructible(maxHp, defense, corpseName, 0) {
 }
 
 void PlayerDestructible::die(Actor *owner) {
 	engine.gui->message(TCODColor::red, "You died!");
 	Destructible::die(owner);
 	engine.gameStatus = Engine::DEFEAT;
-}
-
-void PlayerDestructible::save(TCODZip &zip) {
-	zip.putInt(PLAYER);
-	Destructible::save(zip);
-}
-
-void Destructible::save(TCODZip &zip) {
-	zip.putFloat(maxHp);
-	zip.putFloat(hp);
-	zip.putFloat(defense);
-	zip.putString(corpseName);
-}
-
-void Destructible::load(TCODZip &zip) {
-	maxHp = zip.getFloat();
-	hp = zip.getFloat();
-	defense = zip.getFloat();
-	corpseName = _strdup(zip.getString());
-}
-
-Destructible *Destructible::create(TCODZip &zip) {
-	DestructibleType type = (DestructibleType)zip.getInt();
-	Destructible *destructible = NULL;
-	switch (type) {
-		case Destructible::MONSTER:
-			destructible = new MonsterDestructible(0, 0, NULL);
-			break;
-		case Destructible::PLAYER:
-			destructible = new PlayerDestructible(0, 0, NULL);
-			break;
-		default: break;
-	}
-	destructible->load(zip);
-	return destructible;
 }

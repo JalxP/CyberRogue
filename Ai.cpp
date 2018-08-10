@@ -3,8 +3,43 @@
 // how many turns the monster chases the player
 // after losing his sight
 static const int TRACKING_TURNS = 3;
+const int LEVEL_UP_BASE = 200;
+const int LEVEL_UP_FACTOR = 150;
+
+PlayerAi::PlayerAi() : xpLevel(1){
+}
+
+int PlayerAi::getNextLevelXp() {
+	return LEVEL_UP_BASE + xpLevel * LEVEL_UP_FACTOR;
+}
 
 void PlayerAi::update(Actor *owner) {
+	int levelUpXp = getNextLevelXp();
+	if (owner->destructible->xp >= levelUpXp) {
+		xpLevel++;
+		owner->destructible->xp -= levelUpXp;
+		engine.gui->message(TCODColor::yellow,
+			"Your combat skills grow stronger! You reached level %d", xpLevel);
+		engine.gui->menu.clear();
+		engine.gui->menu.addItem(Menu::CONSTITUTION, "Constitution (+20hp)");
+		engine.gui->menu.addItem(Menu::STRENGTH, "Strength (+1 attack)");
+		engine.gui->menu.addItem(Menu::AGILITY, "Agility (+1 defense)");
+		Menu::MenuItemCode menuItem = engine.gui->menu.pick(Menu::PAUSE);
+
+		switch (menuItem) {
+			case Menu::CONSTITUTION:
+				owner->destructible->maxHp += 20;
+				owner->destructible->hp += 20;
+				break;
+			case Menu::STRENGTH:
+				owner->attacker->power += 1;
+				break;
+			case Menu::AGILITY:
+				owner->destructible->defense += 1;
+				break;
+			default: break;
+		}
+	}
 	if (owner->destructible && owner->destructible->isDead()) {
 		return;
 	}
@@ -25,13 +60,6 @@ void PlayerAi::update(Actor *owner) {
 			engine.map->computeFov();
 		}
 	}
-}
-
-void PlayerAi::save(TCODZip &zip) {
-	zip.putInt(PLAYER);
-}
-
-void PlayerAi::load(TCODZip &zip) {
 }
 
 bool PlayerAi::moveOrAttack(Actor *owner, int targetx, int targety) {
@@ -60,6 +88,10 @@ bool PlayerAi::moveOrAttack(Actor *owner, int targetx, int targety) {
 		if (actor->pickable && samePosition) {
 			engine.gui->message(TCODColor::lightestGrey,
 				"There's a %s here.", actor->name);
+		}
+		if (!actor->fovOnly && samePosition) {
+			engine.gui->message(TCODColor::lighterGreen,
+				"There are %s here.", actor->name);
 		}
 	}
 	owner->x = targetx;
@@ -116,6 +148,16 @@ void PlayerAi::handleActionKey(Actor *owner, int ascii) {
 			}
 			break;
 		}
+		case '.': {
+			if (engine.stairs->x == owner->x && engine.stairs->y == owner->y) {
+				engine.nextLevel();
+			}
+			else {
+				engine.gui->message(TCODColor::lightAmber,
+					"There are no stairs here.");
+			}
+			break;
+		} // >
 		default: break;
 	}
 }
@@ -177,15 +219,6 @@ void MonsterAi::update(Actor *owner) {
 	}
 }
 
-void MonsterAi::save(TCODZip &zip) {
-	zip.putInt(MONSTER);
-	zip.putInt(moveCount);
-}
-
-void MonsterAi::load(TCODZip &zip) {
-	moveCount = zip.getInt();
-}
-
 void MonsterAi::moveOrAttack(Actor *owner, int targetx, int targety) {
 	int dx = targetx - owner->x;
 	int dy = targety - owner->y;
@@ -240,34 +273,4 @@ void ConfusedMonsterAi::update(Actor *owner) {
 		owner->ai = oldAi;
 		delete this;
 	}
-}
-
-void ConfusedMonsterAi::save(TCODZip &zip) {
-	zip.putInt(CONFUSED_MONSTER);
-	zip.putInt(numberOfTurns);
-	oldAi->save(zip);
-}
-
-void ConfusedMonsterAi::load(TCODZip &zip) {
-	numberOfTurns = zip.getInt();
-	oldAi = Ai::create(zip);
-}
-
-Ai *Ai::create(TCODZip &zip) {
-	AiType type = (AiType)zip.getInt();
-	Ai *ai = NULL;
-	switch (type) {
-		case Ai::MONSTER:
-			ai = new MonsterAi();
-			break;
-		case Ai::CONFUSED_MONSTER:
-			ai = new ConfusedMonsterAi(0, NULL);
-			break;
-		case Ai::PLAYER:
-			ai = new PlayerAi();
-			break;
-		default: break;
-	}
-	ai->load(zip);
-	return ai;
 }

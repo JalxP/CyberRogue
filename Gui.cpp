@@ -4,6 +4,8 @@ static const int PANEL_HEIGHT = 7;
 static const int BAR_WIDTH = 20;
 static const int MSG_X = BAR_WIDTH + 2;
 static const int MSG_HEIGHT = PANEL_HEIGHT - 1;
+const int PAUSE_MENU_WIDTH = 30;
+const int PAUSE_MENU_HEIGHT = 15;
 
 Gui::Gui() {
 	con = new TCODConsole(engine.screenWidth, PANEL_HEIGHT);
@@ -23,6 +25,17 @@ void Gui::render() {
 	renderBar(1, 1, BAR_WIDTH, "HP", engine.player->destructible->hp,
 		engine.player->destructible->maxHp,
 		TCODColor::lightRed, TCODColor::darkerRed);
+	
+	// draw the xp bar
+	PlayerAi *ai = (PlayerAi *)engine.player->ai;
+	char xpTxt[128];
+	sprintf_s(xpTxt, "XP (%d)", ai->xpLevel);
+	renderBar(1, 5, BAR_WIDTH, xpTxt, engine.player->destructible->xp,
+		ai->getNextLevelXp(), TCODColor::lightSky, TCODColor::darkerSky);
+
+	// draw the dungeon level
+	con->setDefaultForeground(TCODColor::white);
+	con->print(3, 3, "Proxy level %d", engine.level);
 
 	// draw the message log
 	int y = 1;
@@ -124,27 +137,8 @@ void Gui::message(const TCODColor &col, const char *text, ...) {
 	} while (lineEnd); // Ends if no '\n' is found
 }
 
-void Gui::save(TCODZip &zip) {
-	zip.putInt(log.size());
-	for (Message **iterator = log.begin();
-		iterator != log.end(); iterator++) {
-		zip.putString((*iterator)->text);
-		zip.putColor(&(*iterator)->col);
-	}
-}
-
 void Gui::clear() {
 	log.clearAndDelete();
-}
-
-void Gui::load(TCODZip &zip) {
-	int numberOfMessages = zip.getInt();
-	while (numberOfMessages > 0) {
-		const char *text = zip.getString();
-		TCODColor col = zip.getColor();
-		message(col, text);
-		numberOfMessages--;
-	}
 }
 
 Gui::Message::Message(const char *text, const TCODColor &col) :
@@ -170,6 +164,57 @@ void Menu::addItem(MenuItemCode code, const char *label) {
 	items.push(item);
 }
 
-Menu::MenuItemCode Menu::pick() {
-	static TCODImage img("menu_background.png");
+Menu::MenuItemCode Menu::pick(DisplayMode mode) {
+
+	int selectedItem = 0;
+	int menux, menuy;
+	if (mode == PAUSE) {
+		menux = engine.screenWidth / 2 - PAUSE_MENU_WIDTH / 2;
+		menuy = engine.screenHeight / 2 - PAUSE_MENU_HEIGHT / 2;
+		TCODConsole::root->setDefaultForeground(TCODColor(200, 180, 50));
+		TCODConsole::root->printFrame(menux, menuy, PAUSE_MENU_WIDTH, PAUSE_MENU_HEIGHT, true,
+			TCOD_BKGND_ALPHA(70), "menu");
+		menux += 2;
+		menuy += 3;
+	}
+	else {
+		static TCODImage img("menu_background.png");
+		img.blit2x(TCODConsole::root, 0, 0);
+		menux = 10;
+		menuy = TCODConsole::root->getHeight() / 3;
+	}
+	while (!TCODConsole::isWindowClosed()) {
+		int currentItem = 0;
+		for (MenuItem **iterator = items.begin();
+			iterator != items.end(); iterator++) {
+			if (currentItem == selectedItem) {
+				TCODConsole::root->setDefaultForeground(TCODColor::lightAzure);
+			}
+			else {
+				TCODConsole::root->setDefaultForeground(TCODColor::lightGrey);
+			}
+			TCODConsole::root->print(menux, menuy + currentItem * 3, (*iterator)->label);
+			currentItem++;
+		}
+		TCODConsole::flush();
+		// check key presses
+		TCOD_key_t key;
+		TCODSystem::checkForEvent(TCOD_EVENT_KEY_PRESS, &key, NULL);
+
+		switch (key.vk) {
+			case TCODK_UP:
+				selectedItem--;
+				if (selectedItem < 0) {
+					selectedItem = items.size() - 1;
+				}
+				break;
+			case TCODK_DOWN:
+				selectedItem = (selectedItem + 1) % items.size();
+				break;
+			case TCODK_ENTER:
+				return items.get(selectedItem)->code;
+			default: break;
+		}
+	}
+	return NONE;
 }

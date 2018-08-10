@@ -15,8 +15,10 @@ public:
 	TCOD_mouse_t mouse;
 	TCODList<Actor *> actors;
 	Actor *player;
+	Actor *stairs;
 	Map * map;
 	int fovRadius;
+	int level;
 
 	Engine(int screenWidth, int screenHeight);
 	~Engine();
@@ -25,10 +27,11 @@ public:
 	bool pickATile(int*x, int *y, float maxRange = 0.0f);
 	void init();
 	void term();
-	void load();
+	void load(bool pause = false);
 	void save();
 	void update();
 	void sendToBack(Actor *actor);
+	void nextLevel();
 	void render();
 
 private:

@@ -2,7 +2,7 @@
 
 Engine::Engine(int screenWidth, int screenHeight) : gameStatus(STARTUP),
 	player(NULL), map(NULL), fovRadius(10),
-	screenWidth(screenWidth), screenHeight(screenHeight) {
+	screenWidth(screenWidth), screenHeight(screenHeight), level(1) {
 	TCODConsole::initRoot(screenWidth, screenHeight, "CyberRogue 0.1", false);
 	gui = new Gui();
 }
@@ -88,6 +88,10 @@ void Engine::init() {
 	player->ai = new PlayerAi();
 	player->container = new Container(26); // one slot each letter (ez access)
 	actors.push(player);
+	stairs = new Actor(0, 0, '>', "stairs", TCODColor::lighterSepia);
+	stairs->blocks = false;
+	stairs->fovOnly = false;
+	actors.push(stairs);
 	map = new Map(80, 43);
 	map->init(true);
 	gui->message(TCODColor::darkerCrimson,
@@ -105,7 +109,10 @@ void Engine::update() {
 	if (gameStatus == STARTUP) map->computeFov();
 	gameStatus = IDLE;
 	TCODSystem::checkForEvent(TCOD_EVENT_KEY_PRESS | TCOD_EVENT_MOUSE, &lastKey, &mouse);
-
+	if (lastKey.vk == TCODK_ESCAPE) {
+		save();
+		load();
+	}
 	player->update();
 	if (gameStatus == NEW_TURN) {
 		for (Actor **iterator = actors.begin(); iterator != actors.end();
@@ -123,6 +130,29 @@ void Engine::sendToBack(Actor *actor) {
 	actors.insertBefore(actor, 0);
 }
 
+void Engine::nextLevel() {
+	level++;
+
+	gui->message(TCODColor::darkerPink,
+		"You take a moment to rest, and recover your vitality.");
+	player->destructible->heal(player->destructible->maxHp / 2);
+	gui->message(TCODColor::lighterSky, "After a rare moment of peace, you descend\ndeeper into the slums of the Proxy...");
+
+	delete map;
+	// delete all actors but the player and stairs
+	for (Actor **iterator = actors.begin();
+		iterator != actors.end(); iterator++) {
+		if (*iterator != player && *iterator != stairs) {
+			delete *iterator;
+			iterator = actors.remove(iterator); // some list voodoo here
+		}
+	}
+	// create a new map
+	map = new Map(80, 43);
+	map->init(true);
+	gameStatus = STARTUP;
+}
+
 void Engine::render() {
 	TCODConsole::root->clear();
 	// draw the map
@@ -132,7 +162,9 @@ void Engine::render() {
 	for (Actor **iterator = actors.begin();
 		iterator != actors.end(); iterator++) {
 		Actor *actor = *iterator;
-		if (map->isInFOV(actor->x, actor->y)) {
+		if (actor != player &&
+			((!actor->fovOnly && map->isExplored(actor->x, actor->y)) ||
+				map->isInFOV(actor->x, actor->y))) {
 			actor->render();
 		}
 	}
